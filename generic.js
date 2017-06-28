@@ -1,6 +1,8 @@
 var DB = require('./db.js')
 var request = require('request');
 var cheerio = require('cheerio');
+var psl = require('psl');
+var Url = require("url");
 
 var FN_getHtml = function(url, callback) {
     request(url, function(error, response, body) {
@@ -37,32 +39,22 @@ var FN_db_insertDomains = function(domainsList, callback) {
     }
 }
 
-var FN_db_insert_programableDomains = function(domainsList, callback) {
-    if (domainsList.length == 0) {
-        callback('All domains inserted!!');
-    } else {
-        domain = domainsList.splice(0, 1);
-        console.log('Pending to insert --------------------------------------- ' + domainsList.length)
-        let model = new DB.temp_programmableweb(domain[0]);
-        model.save(function(err) {
-            if (err) {
-                console.log(err)
-                process.exit(0);
-                //FN_db_insertDomains( domainsList, callback )
-            } else {
-                if (domainsList.length) {
-                    FN_db_insert_programableDomains(domainsList, callback)
-                } else {
-                    callback("domain inserted");
-                }
-            }
-        });
+var FN_check_subDomain = function(subdomain, callback) {
+    var parseUrl = Url.parse(subdomain);
+    var u_domainName = parseUrl.hostname;
+    var splitArr = u_domainName.split('.');
+    var arrLen = splitArr.length;
+    if (arrLen > 2) {
+        u_domainName = splitArr[arrLen - 2] + '.' + splitArr[arrLen - 1];
     }
+    u_domainName = parseUrl.protocol + '//' + u_domainName;
+    callback(u_domainName);
 }
+
 
 module.exports = {
     getHtml: FN_getHtml,
     getDom: FN_getDOM,
     db_insertDomains: FN_db_insertDomains,
-    db_insert_programableDomains: FN_db_insert_programableDomains
+    filterMainDomainName: FN_check_subDomain
 }
