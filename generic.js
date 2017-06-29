@@ -51,10 +51,29 @@ var FN_check_subDomain = function(subdomain, callback) {
     callback(u_domainName);
 }
 
+var FN_raw_sub_domains = function(jQuery, callback) {
+    var raw_sub_domain = [];
+    if (jQuery('div.field').length > 0) {
+        jQuery('div.field a').each(function() {
+            var link = Url.parse(jQuery(this).attr("href")).hostname
+            if (link && raw_sub_domain.indexOf(link) == -1) {
+                raw_sub_domain.push(link)
+            }
+        })
+        callback(raw_sub_domain)
+    }
+}
+
+var FN_valid_sub_domains = function(callback) {
+    var valid_sub_domains = ["api-docs.", "api.", "apidoc.", "dev.", "developer.", "developers.", "doc.", "docs.", "documentation.", "readme."];
+    callback(valid_sub_domains)
+}
 
 module.exports = {
     getHtml: FN_getHtml,
     getDom: FN_getDOM,
     db_insertDomains: FN_db_insertDomains,
-    filterMainDomainName: FN_check_subDomain
+    filterMainDomainName: FN_check_subDomain,
+    raw_sub_domains: FN_raw_sub_domains,
+    valid_sub_domains: FN_valid_sub_domains
 }

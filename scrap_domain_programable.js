@@ -1,5 +1,6 @@
 var GENERIC = require('./generic.js');
 var DB = require('./db.js');
+var _ = require("lodash");
 
 function scrapRawUrls(urls, callback) {
     var url = urls.splice(0, 1)
@@ -77,22 +78,34 @@ function scrapRawDomains(urls, callback) {
                 GENERIC.getDom(body, function(jQuery) {
                     var website_name = url[0].get("domain_name");
                     var website_url = jQuery('div.section div.field a').attr("href");
-                    if (typeof website_name != 'undefined' && website_name != '' && website_name != null) {
-                        if (typeof website_url != 'undefined' && website_url.trim() != '') {
-                            GENERIC.filterMainDomainName(website_url, function(domain_url) {
-                                allDomains.push({
-                                    source_website: 'programmableweb',
-                                    source_website_url: url[0].get("domain_url"),
-                                    domain_name: website_name,
-                                    domain_url: domain_url
+                    GENERIC.filterMainDomainName(website_url, function(hostname) {
+                        GENERIC.raw_sub_domains(jQuery, function(raw_sub_domains) {
+                            GENERIC.valid_sub_domains(function(valid_sub_domains) {
+                                valid_subdomain_list = [];
+                                create_valid_subdomains_list(raw_sub_domains, valid_sub_domains, hostname, function(valid_list) {
+                                    if (typeof website_name != 'undefined' && website_name != '' && website_name != null) {
+                                        if (typeof website_url != 'undefined' && website_url.trim() != '') {
+                                            GENERIC.filterMainDomainName(website_url, function(domain_url) {
+                                                allDomains.push({
+                                                    source_website: 'programmableweb',
+                                                    source_website_url: url[0].get("domain_url"),
+                                                    domain_name: website_name,
+                                                    domain_url: domain_url,
+                                                    raw_sub_domains: raw_sub_domains,
+                                                    valid_sub_domains: valid_list,
+                                                    status: 0
+                                                })
+                                            });
+                                        } else {
+                                            updateTempStatus(url[0]._id, function(res) {
+                                                scrapRawDomains(urls, callback)
+                                            })
+                                        }
+                                    }
                                 })
-                            });
-                        } else {
-                            updateTempStatus(url[0]._id, function(res) {
-                                scrapRawDomains(urls, callback)
                             })
-                        }
-                    }
+                        })
+                    })
                 })
                 GENERIC.db_insertDomains(allDomains, function(status) {
                     updateTempStatus(url[0]._id, function(res) {
@@ -101,6 +114,21 @@ function scrapRawDomains(urls, callback) {
                 })
             }
         })
+    }
+}
+
+function create_valid_subdomains_list(raw_data, valid_data, hostname, callback) {
+    var valid_subdomain = valid_data.splice(0, 1);
+    var host = hostname.split("//");
+    _.forEach(raw_data, (val, key) => {
+        if (val.match(new RegExp(valid_subdomain[0] + host[1], 'gi')) && valid_subdomain_list.indexOf(val) == -1) {
+            valid_subdomain_list.push(val)
+        }
+    })
+    if (valid_data.length) {
+        create_valid_subdomains_list(raw_data, valid_data, hostname, callback)
+    } else {
+        callback(valid_subdomain_list)
     }
 }
 
@@ -117,7 +145,7 @@ function scrapDomains(callback) {
 }
 
 var allUrls = [];
-
+var valid_subdomain_list = [];
 var url = 'https://www.programmableweb.com/category/all/apis?page=';
 
 for (var i = 1; i <= 640; i++) {
