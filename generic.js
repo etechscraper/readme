@@ -3,6 +3,7 @@ var request = require('request');
 var cheerio = require('cheerio');
 var psl = require('psl');
 var Url = require("url");
+var urlExists = require('url-exists');
 
 var FN_getHtml = function(url, callback) {
     request(url, function(error, response, body) {
@@ -69,11 +70,23 @@ var FN_valid_sub_domains = function(callback) {
     callback(valid_sub_domains)
 }
 
+
+var FN_test_domain_data = function(url, callback) {
+    var domain = "http://" + url;
+    console.log(domain)
+    request({ url: domain, method: 'HEAD' }, function(err, res) {
+        if (err) return callback(null, false);
+        console.log(res.statusCode)
+        callback(null, /4\d\d/.test(res.statusCode) === false);
+    });
+}
+
 module.exports = {
     getHtml: FN_getHtml,
     getDom: FN_getDOM,
     db_insertDomains: FN_db_insertDomains,
     filterMainDomainName: FN_check_subDomain,
     raw_sub_domains: FN_raw_sub_domains,
-    valid_sub_domains: FN_valid_sub_domains
+    valid_sub_domains: FN_valid_sub_domains,
+    test_domain_data: FN_test_domain_data
 }

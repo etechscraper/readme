@@ -64,6 +64,7 @@ function db_insert_programableDomains(domainsList, callback) {
 
 function scrapRawDomains(urls, callback) {
     var url = urls.splice(0, 1)
+    console.log(urls)
     var body_url = url[0].get("domain_url");
     console.log(body_url)
     if (urls.length == 0) {
@@ -91,7 +92,6 @@ function scrapRawDomains(urls, callback) {
                                                     source_website_url: url[0].get("domain_url"),
                                                     domain_name: website_name,
                                                     domain_url: domain_url,
-                                                    raw_sub_domains: raw_sub_domains,
                                                     valid_sub_domains: valid_list,
                                                     status: 0
                                                 })

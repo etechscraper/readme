@@ -19,18 +19,6 @@ let domainsSchema = mongoose.Schema({
     domain_url: {
         type: String,
         required: true
-    },
-    raw_sub_domains: {
-        type: Array,
-        required: true
-    },
-    valid_sub_domains: {
-        type: Array,
-        required: false
-    },
-    status: {
-        type: Boolean,
-        required: true
     }
 }, {
     strict: false,
