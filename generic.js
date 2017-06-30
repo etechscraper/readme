@@ -1,7 +1,6 @@
 var DB = require('./db.js')
 var request = require('request');
 var cheerio = require('cheerio');
-var psl = require('psl');
 var Url = require("url");
 var urlExists = require('url-exists');
 
