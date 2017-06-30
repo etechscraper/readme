@@ -24,18 +24,23 @@ var FN_db_insertDomains = function(domainsList, callback) {
     } else {
         domain = domainsList[0];
         domainsList.splice(0, 1);
-        console.log(domain)
         console.log('Pending to insert --------------------------------------- ' + domainsList.length)
-        let model = new DB.domains(domain);
-        model.save(function(err) {
-            if (err) {
-                console.log(err)
-                process.exit(0);
-                //FN_db_insertDomains( domainsList, callback )
-            } else {
+        DB.domains.find({ domain_url: domain.domain_url }).exec(function(err, result) {
+            if (result.length) {
                 FN_db_insertDomains(domainsList, callback)
+            } else {
+                let model = new DB.domains(domain);
+                model.save(function(err) {
+                    if (err) {
+                        console.log(err)
+                        process.exit(0);
+                        //FN_db_insertDomains( domainsList, callback )
+                    } else {
+                        FN_db_insertDomains(domainsList, callback)
+                    }
+                });
             }
-        });
+        })
     }
 }
 
@@ -72,10 +77,12 @@ var FN_valid_sub_domains = function(callback) {
 
 var FN_test_domain_data = function(url, callback) {
     var domain = "http://" + url;
-    console.log(domain)
     request({ url: domain, method: 'HEAD' }, function(err, res) {
-        if (err) return callback(null, false);
-        console.log(res.statusCode)
+        if (err) {
+            console.log("", domain)
+            return callback(null, false);
+        }
+        console.log(res.statusCode, domain)
         callback(null, /4\d\d/.test(res.statusCode) === false);
     });
 }

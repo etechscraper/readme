@@ -4,7 +4,6 @@ var _ = require("lodash");
 
 function scrapRawUrls(urls, callback) {
     var url = urls.splice(0, 1)
-    console.log(url)
     if (urls.length == 0) {
         callback();
     } else {
@@ -44,27 +43,33 @@ function db_insert_programableDomains(domainsList, callback) {
         callback('All domains inserted!!');
     } else {
         domain = domainsList.splice(0, 1);
-        console.log('Pending to insert --------------------------------------- ' + domainsList.length)
-        let model = new DB.temp_programmableweb(domain[0]);
-        model.save(function(err) {
-            if (err) {
-                console.log(err)
-                process.exit(0);
-                //FN_db_insertDomains( domainsList, callback )
-            } else {
-                if (domainsList.length) {
-                    db_insert_programableDomains(domainsList, callback)
+        DB.temp_programmableweb.find({ domain_url: domain[0].domain_url }).exec(function(err, result) {
+                if (!result[0]) {
+                    let model = new DB.temp_programmableweb(domain[0]);
+                    model.save(function(err) {
+                        if (err) {
+                            console.log(err)
+                            process.exit(0);
+                            //FN_db_insertDomains( domainsList, callback )
+                        } else {
+                            if (domainsList.length) {
+                                db_insert_programableDomains(domainsList, callback)
+                            } else {
+                                callback("domain inserted");
+                            }
+                        }
+                    });
                 } else {
-                    callback("domain inserted");
+                    db_insert_programableDomains(domainsList, callback)
                 }
-            }
-        });
+            })
+            //console.log('Pending to insert --------------------------------------- ' + domainsList.length)
+
     }
 }
 
 function scrapRawDomains(urls, callback) {
     var url = urls.splice(0, 1)
-    console.log(urls)
     var body_url = url[0].get("domain_url");
     console.log(body_url)
     if (urls.length == 0) {
@@ -92,7 +97,6 @@ function scrapRawDomains(urls, callback) {
                                                     source_website_url: url[0].get("domain_url"),
                                                     domain_name: website_name,
                                                     domain_url: domain_url,
-                                                    valid_sub_domains: valid_list,
                                                     status: 0
                                                 })
                                             });
@@ -161,9 +165,14 @@ if (args[0] == "rawScrap") {
     })
 } else if (args[0] == "scrapDomains") {
     scrapDomains(function(res) {
-        var tempData = res;
-        scrapRawDomains(res, function() {
-            console.log("all done")
-        })
+        if (res.length > 0) {
+            scrapRawDomains(res, function() {
+                console.log("all done")
+            })
+        } else {
+            console.log('No record found to process in temp_programmableweb collection!!')
+            process.exit(0);
+        }
+
     })
 }

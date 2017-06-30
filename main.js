@@ -18,7 +18,6 @@ function test_domains_url(domain_array, callback) {
         if (domain_array.length) {
             test_domains_url(domain_array, callback)
         } else {
-            console.log(passed_domain)
             callback(passed_domain)
         }
     })
@@ -28,7 +27,7 @@ function test_valid_sub_domains(domains_list, valid_sub_domains, callback) {
     var _id = domains_list[0]._id;
     var domain_url1 = Url.parse(domains_list.splice(0, 1)[0].domain_url).hostname;
     var domain_url = domain_url1.replace("www.", "");
-    console.log(domain_url)
+    console.log("domain url ----------------", "http://" + domain_url1)
     var domains = []
     _.forEach(valid_sub_domains, (val, key) => {
         domains.push(val + domain_url)
@@ -36,8 +35,7 @@ function test_valid_sub_domains(domains_list, valid_sub_domains, callback) {
     test_domains_url(domains, function(result) {
         DB.domains.findOneAndUpdate({ "_id": _id }, { final_valid_sub_domains: result, status: 1 }).exec((err, response) => {
             if (response) {
-                console.log("left pages:-----------", domains_list.length)
-                console.log(response)
+                console.log("left domains list ------------------------------------", domains_list.length)
                 passed_domain = []
                 if (domains_list.length) {
                     test_valid_sub_domains(domains_list, valid_sub_domains, callback)
@@ -53,6 +51,7 @@ function test_valid_sub_domains(domains_list, valid_sub_domains, callback) {
 function valid_subdomains_main() {
     fetch_domain_data(function(domains_list) {
         if (domains_list[0]) {
+            console.log("left domains list ------------------------------------", domains_list.length)
             GENERIC.valid_sub_domains(function(sub_domains) {
                 test_valid_sub_domains(domains_list, sub_domains, function(result) {
                     console.log(result)
@@ -60,7 +59,7 @@ function valid_subdomains_main() {
                 })
             })
         } else {
-            console.log("Nothing to Fetch!!!")
+            console.log('No record found to process in domains collection!!')
             process.exit(0)
         }
 
