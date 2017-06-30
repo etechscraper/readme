@@ -159,7 +159,7 @@ if (args[0] == "rawScrap") {
         console.log('All Are done!!!!');
         process.exit(0);
     })
-} else if (args[0] == "scrapRawDomains") {
+} else if (args[0] == "scrapDomains") {
     scrapDomains(function(res) {
         var tempData = res;
         scrapRawDomains(res, function() {
