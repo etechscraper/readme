@@ -3,110 +3,97 @@ var DB = require('./db.js');
 var Url = require("url");
 var _ = require("lodash");
 
-function fetch_domain_data(cb) {
-    DB.domains.find({ status: 0 }).exec(function(err, result) {
-        cb(result)
+
+
+function analyseSubdomain( url, callback ){    
+    GENERIC.is_valid_url( url, function(statusCode, finalUrl ) {
+        if( statusCode != 200 ){
+            callback( false )
+        }else{
+            var ret = {
+                url : finalUrl
+            }
+            GENERIC.getHtml(finalUrl, function(status, body) {
+                if (status === 'error') {
+                    callback( ret );
+                }else{
+                    GENERIC.getDom(body, function(jQuery) {
+                        var emails = GENERIC.extract_emails_from_dom(jQuery);
+                        var text_matched = GENERIC.extract_matched_text(jQuery);
+                        var support_help = GENERIC.extract_support_help_links(jQuery);
+                        ret = {
+                            url : finalUrl,
+                            emails : emails,
+                            text_matched : text_matched,
+                            support_help : support_help
+                        }
+                        callback( ret );
+                    })
+                }
+            })
+        }
     })
 }
 
-function test_domains_url(domain_array, callback) {
-    if (domain_array.length == 0) {
-        callback(passed_domain)
-    } else {
-        var url = domain_array.splice(0, 1);
-        url = url[0];
-        console.log('*********************************')
-        console.log('*********************************')
-        console.log('Verifying subdomain ---- ' + url )
-        console.log('*********************************')
-        console.log('*********************************')
-        GENERIC.is_valid_url(url, function(statusCode, finalUrl ) {
-            url = 'api.structik.com'
-            if( statusCode != 200 ){
-                console.log('---Result---'+statusCode+'--Invalid')
-                test_domains_url(domain_array, callback)   
+function analyseDomain( sub_domains_to_check, domain, valid_sub_domains_list, callback ){
+    if( sub_domains_to_check.length == 0 ){
+        callback( valid_sub_domains_list );
+    }else{
+        var sub_domain = sub_domains_to_check.splice(0, 1);
+        sub_domain = sub_domain[0];
+
+        var domain_url = Url.parse( domain.domain_url ).hostname;
+        var domain_url = domain_url.replace("www.", "");
+
+        var subdomainURL = sub_domain + domain_url;
+
+        console.log('\n analyse sub domain ------ ' + subdomainURL )
+
+        analyseSubdomain( subdomainURL, function( subdomainRESULT ){
+            if( subdomainRESULT === false ){
+                console.log('--------------------------------------------------Invalid Sub Domain')
+                analyseDomain( sub_domains_to_check, domain, valid_sub_domains_list, callback )
             }else{
-                console.log('---Result---'+statusCode+'--Valid')
-                console.log('---Result-----Scraping more info...')
-                GENERIC.getHtml(finalUrl, function(status, body) {
-                    if (status === 'error') {
-                        test_domains_url(domain_array, callback)
-                    } else {
-                        GENERIC.getDom(body, function(jQuery) {
-                            var emails = GENERIC.extract_emails_from_dom(jQuery);
-                            var text_matched = GENERIC.extract_matched_text(jQuery);
-                            var support_help = GENERIC.extract_support_help_links(jQuery);
-                            let uData = { 
-                                url: finalUrl,
-                                emails : emails,
-                                text_matched : text_matched,
-                                support_help : support_help
-                            }
-                            console.log( uData )
-                            passed_domain.push( uData)
-                            callback(passed_domain)
-                            test_domains_url(domain_array, callback)
-                        })
-                    }   
-                })
+                console.log('--------------------------------------------------Valid Sub Domain')
+                console.log( subdomainRESULT )    
+                valid_sub_domains_list.push( subdomainRESULT );
+                analyseDomain( sub_domains_to_check, domain, valid_sub_domains_list, callback )
             }
             
-            // if (res == true) {
-
-            //     console.log('check for  emails, help, support ---- ' +  url[0])
-            
-            // } else {
-            //     test_domains_url(domain_array, callback)
-            // }
         })
     }
 }
 
+function processDomains( domains, callback ){
+    console.log('__________________________________________________________________________pending domains ----- ' + domains.length)
+    console.log('\n')
+    if( domains.length == 0 ){
+        callback();
+    }else{
+        var domainToProcess = domains.splice(0, 1);
+        domainToProcess = domainToProcess[0];
+        var sub_domains_to_check = GENERIC.valid_sub_domains();
 
+        var valid_sub_domains_list = [];
+        analyseDomain( sub_domains_to_check, domainToProcess, valid_sub_domains_list, function( result_valid_sub_domains ){
+            var _id = domainToProcess._id;
+            console.log('Valid subdomains found ------------------------------------------------------------------ ' + result_valid_sub_domains.length )
+            console.log('\n')
+            DB.domains.findOneAndUpdate({ "_id": _id }, { final_valid_sub_domains: result_valid_sub_domains, status: 1 }).exec((err, response) => {
+                processDomains( domains, callback );
+            })
+        })
+    }
+}
 
-
-function test_valid_sub_domains(domains_list, valid_sub_domains, callback) {
-    var _id = domains_list[0]._id;
-    var domain_url1 = Url.parse(domains_list.splice(0, 1)[0].domain_url).hostname;
-    var domain_url = domain_url1.replace("www.", "");
-    console.log("domain url ----------------", "http://" + domain_url1)
-    var domains = []
-    _.forEach(valid_sub_domains, (val, key) => {
-        domains.push(val + domain_url)
-    })
-    test_domains_url(domains, function(result) {
-        DB.domains.findOneAndUpdate({ "_id": _id }, { final_valid_sub_domains: result, status: 1 }).exec((err, response) => {
-            if (response) {
-                console.log("left domains list ------------------------------------", domains_list.length)
-                passed_domain = []
-                if (domains_list.length) {
-                    test_valid_sub_domains(domains_list, valid_sub_domains, callback)
-                } else {
-                    callback("All process is done !!")
-                }
-            }
+function start(){
+    DB.domains.find({ status: 0 }).exec(function(err, result) {
+        processDomains( result, function(){
+            console.log('all are done!!!');
+            process.exit(0);
         })
     })
 }
 
 
-function valid_subdomains_main() {
-    fetch_domain_data(function(domains_list) {
-        if (domains_list[0]) {
-            console.log("left domains list ------------------------------------", domains_list.length)
-            GENERIC.valid_sub_domains(function(sub_domains) {
-                test_valid_sub_domains(domains_list, sub_domains, function(result) {
-                    console.log(result)
-                    process.exit(0)
-                })
-            })
-        } else {
-            console.log('No record found to process in domains collection!!')
-            process.exit(0)
-        }
-
-    })
-}
-var passed_domain = []
-
-valid_subdomains_main()
+start();

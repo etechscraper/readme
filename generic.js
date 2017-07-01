@@ -8,7 +8,7 @@ var FN_getHtml = function(url, callback) {
 
     var options = {
         url:  url,
-        timeout: 30000
+        timeout: 10000
     }
     request(options, function(error, response, body) {
         if (!error) {
@@ -75,9 +75,9 @@ var FN_raw_sub_domains = function(jQuery, callback) {
     }
 }
 
-var FN_valid_sub_domains = function(callback) {
+var FN_valid_sub_domains = function() {
     var valid_sub_domains = ["api-docs.", "api.", "apidoc.", "dev.", "developer.", "developers.", "doc.", "docs.", "documentation.", "readme."];
-    callback(valid_sub_domains)
+    return valid_sub_domains;
 }
 
 
@@ -122,7 +122,7 @@ var FN_extract_emails_from_dom = function(body) {
 var FN_extract_matched_text = function(body) {
     var ret = [];
     var body = body.text();
-    var textArray = ['swagger', 'open api', 'the'];
+    var textArray = ['swagger', 'open api'];
     for (var t in textArray) {
         txt = textArray[t];
         if (findText(txt, body)) {
