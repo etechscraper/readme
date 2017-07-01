@@ -10,18 +10,60 @@ function fetch_domain_data(cb) {
 }
 
 function test_domains_url(domain_array, callback) {
-    var url = domain_array.splice(0, 1);
-    GENERIC.test_domain_data(url, function(err, res) {
-        if (res == true) {
-            passed_domain.push({ url: url[0] })
-        }
-        if (domain_array.length) {
-            test_domains_url(domain_array, callback)
-        } else {
-            callback(passed_domain)
-        }
-    })
+    if (domain_array.length == 0) {
+        callback(passed_domain)
+    } else {
+        var url = domain_array.splice(0, 1);
+        url = url[0];
+        console.log('*********************************')
+        console.log('*********************************')
+        console.log('Verifying subdomain ---- ' + url )
+        console.log('*********************************')
+        console.log('*********************************')
+        GENERIC.is_valid_url(url, function(statusCode, finalUrl ) {
+            url = 'api.structik.com'
+            if( statusCode != 200 ){
+                console.log('---Result---'+statusCode+'--Invalid')
+                test_domains_url(domain_array, callback)   
+            }else{
+                console.log('---Result---'+statusCode+'--Valid')
+                console.log('---Result-----Scraping more info...')
+                GENERIC.getHtml(finalUrl, function(status, body) {
+                    if (status === 'error') {
+                        test_domains_url(domain_array, callback)
+                    } else {
+                        GENERIC.getDom(body, function(jQuery) {
+                            var emails = GENERIC.extract_emails_from_dom(jQuery);
+                            var text_matched = GENERIC.extract_matched_text(jQuery);
+                            var support_help = GENERIC.extract_support_help_links(jQuery);
+                            let uData = { 
+                                url: finalUrl,
+                                emails : emails,
+                                text_matched : text_matched,
+                                support_help : support_help
+                            }
+                            console.log( uData )
+                            passed_domain.push( uData)
+                            callback(passed_domain)
+                            test_domains_url(domain_array, callback)
+                        })
+                    }   
+                })
+            }
+            
+            // if (res == true) {
+
+            //     console.log('check for  emails, help, support ---- ' +  url[0])
+            
+            // } else {
+            //     test_domains_url(domain_array, callback)
+            // }
+        })
+    }
 }
+
+
+
 
 function test_valid_sub_domains(domains_list, valid_sub_domains, callback) {
     var _id = domains_list[0]._id;
