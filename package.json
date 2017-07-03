@@ -1,27 +1,28 @@
 {
-    "name": "readme",
-    "version": "1.0.0",
-    "description": "",
-    "main": "generic.js",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/etechscraper/readme.git"
-    },
-    "author": "",
-    "license": "ISC",
-    "bugs": {
-        "url": "https://github.com/etechscraper/readme/issues"
-    },
-    "homepage": "https://github.com/etechscraper/readme#readme",
-    "devDependencies": {},
-    "dependencies": {
-        "cheerio": "^1.0.0-rc.1",
-        "lodash": "^4.17.4",
-        "mongoose": "^4.10.8",
-        "request": "^2.81.0",
-        "url-exists": "^1.0.3"
-    }
+  "name": "readme",
+  "version": "1.0.0",
+  "description": "",
+  "main": "generic.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/etechscraper/readme.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/etechscraper/readme/issues"
+  },
+  "homepage": "https://github.com/etechscraper/readme#readme",
+  "devDependencies": {},
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.1",
+    "lodash": "^4.17.4",
+    "mongoose": "^4.10.8",
+    "request": "^2.81.0",
+    "spooky": "^0.2.5",
+    "url-exists": "^1.0.3"
+  }
 }
