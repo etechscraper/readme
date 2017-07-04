@@ -3,18 +3,24 @@ var request = require('request');
 var cheerio = require('cheerio');
 var Url = require("url");
 var urlExists = require('url-exists');
+try {
+    var Spooky = require('spooky');
+} catch (e) {
+    var Spooky = require('../lib/spooky');
+}
+
 
 var FN_getHtml = function(url, callback) {
 
     var options = {
-        url:  url,
+        url: url,
         timeout: 10000
     }
     request(options, function(error, response, body) {
         if (!error) {
             callback('success', body);
         } else {
-            console.log( error )
+            console.log(error)
             callback('error', body);
         }
     })
@@ -83,15 +89,15 @@ var FN_valid_sub_domains = function() {
 
 var FN_is_valid_url = function(url, callback) {
     var domain = "http://" + url;
-    request({ 
-        url: domain, 
+    request({
+        url: domain,
         method: 'HEAD',
         timeout: 10000
     }, function(err, res) {
         if (err) {
             callback('', domain);
-        }else{
-            callback(res.statusCode, domain );    
+        } else {
+            callback(res.statusCode, domain);
         }
     });
 }
@@ -135,24 +141,70 @@ var FN_extract_matched_text = function(body) {
 var FN_extract_support_help_links = function(jQuery) {
     let emails = [];
     let links = [];
-    jQuery('a').each(function(){
-        lnk  = jQuery( this ).text().toLowerCase();
-        if( lnk.indexOf('help') != -1 || lnk.indexOf('support') != -1 ){
-            lnk_href= jQuery( this ).attr('href');
-            if( lnk_href.indexOf('mailto:') != -1 ){
+    jQuery('a').each(function() {
+        lnk = jQuery(this).text().toLowerCase();
+        if (lnk.indexOf('help') != -1 || lnk.indexOf('support') != -1) {
+            lnk_href = jQuery(this).attr('href');
+            if (lnk_href.indexOf('mailto:') != -1) {
                 var aa = lnk_href.split(":");
-                if( typeof aa[1] != 'undefined' ){
-                    emails.push( aa[1] )                          
+                if (typeof aa[1] != 'undefined') {
+                    emails.push(aa[1])
                 }
-            }else{
-                links.push( lnk_href )    
-            }            
+            } else {
+                links.push(lnk_href)
+            }
         }
     })
     return {
         'email': emails,
         'link': links,
     }
+}
+
+var FN_take_snapshot = function(url, fileName, callback) {
+    var name = __dirname + "/snapshots/" + fileName + ".png";
+    console.log(name)
+    var spooky = new Spooky({
+        child: {
+            transport: 'http'
+        },
+        casper: {
+            logLevel: 'debug',
+            verbose: true
+        }
+    }, function(err) {
+        if (err) {
+            e = new Error('Failed to initialize SpookyJS');
+            e.details = err;
+            throw e;
+        }
+        spooky.start(url);
+        spooky.then([{ name: name }, function() {
+            this.capture(name)
+            this.emit("return", [{ name: name }, function() {
+                return name
+            }])
+        }]);
+
+        spooky.run();
+
+        spooky.on('exit', function() {
+            console.log('###############EXIT');
+            callback(name);
+
+        });
+        spooky.on('return', function(data) {
+            this.exit()
+        });
+    });
+
+    spooky.on('error', function(e, stack) {
+        console.error(e);
+
+        if (stack) {
+            console.log(stack);
+        }
+    });
 }
 
 module.exports = {
@@ -165,5 +217,6 @@ module.exports = {
     is_valid_url: FN_is_valid_url,
     extract_emails_from_dom: FN_extract_emails_from_dom,
     extract_matched_text: FN_extract_matched_text,
-    extract_support_help_links: FN_extract_support_help_links
+    extract_support_help_links: FN_extract_support_help_links,
+    take_snapshot: FN_take_snapshot
 }
