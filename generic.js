@@ -9,6 +9,7 @@ try {
     var Spooky = require('../lib/spooky');
 }
 
+
 var FN_getHtml = function(url, callback) {
 
     var options = {
@@ -160,7 +161,9 @@ var FN_extract_support_help_links = function(jQuery) {
     }
 }
 
-var FN_take_snapshot = function(url, callback) {
+var FN_take_snapshot = function(url, fileName, callback) {
+    var name = __dirname + "/snapshots/" + fileName + ".png";
+    console.log(name)
     var spooky = new Spooky({
         child: {
             transport: 'http'
@@ -175,20 +178,27 @@ var FN_take_snapshot = function(url, callback) {
             e.details = err;
             throw e;
         }
-        var name = Url.parse(url).hostname;
         spooky.start(url);
-        spooky.then(function() {
-            this.capture(name + ".png");
-            // callback(Url.parse(url).hostname + ".png")
-            this.emit('hello', 'Hello, from ' + this.evaluate(function() {
-                return document.title;
-            }));
-        });
+        spooky.then([{ name: name }, function() {
+            this.capture(name)
+            this.emit("return", [{ name: name }, function() {
+                return name
+            }])
+        }]);
+
         spooky.run();
+
+        spooky.on('exit', function() {
+            console.log('###############EXIT');
+            callback(name);
+
+        });
+        spooky.on('return', function(data) {
+            this.exit()
+        });
     });
 
     spooky.on('error', function(e, stack) {
-        console.log("===============")
         console.error(e);
 
         if (stack) {

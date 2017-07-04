@@ -10,32 +10,36 @@ function analyseSubdomain(url, callback) {
         if (statusCode != 200) {
             callback(false)
         } else {
-            GENERIC.take_snapshot(finalUrl, function(url, snapshot) {
-                var ret = {
-                    url: finalUrl,
-                    snapshot: snapshot
-                }
-                GENERIC.getHtml(finalUrl, function(status, body) {
+            GENERIC.getHtml(finalUrl, function(status, body) {
                     if (status === 'error') {
-                        GENERIC.teke_snapshot(finalUrl, callback)
-                        callback(ret);
+                        var file = Url.parse(finalUrl).hostname.replace(/\./g, "");
+                        GENERIC.take_snapshot(finalUrl, file, function(snapshot) {
+                            var ret = {
+                                url: finalUrl,
+                                snapshot: snapshot
+                            }
+                            callback(ret)
+                        })
                     } else {
                         GENERIC.getDom(body, function(jQuery) {
                             var emails = GENERIC.extract_emails_from_dom(jQuery);
                             var text_matched = GENERIC.extract_matched_text(jQuery);
                             var support_help = GENERIC.extract_support_help_links(jQuery);
-                            ret = {
-                                url: finalUrl,
-                                emails: emails,
-                                text_matched: text_matched,
-                                support_help: support_help
-                            }
-                            GENERIC.teke_snapshot(finalUrl, callback)
-                            callback(ret);
+                            var file = Url.parse(finalUrl).hostname.replace(/\./g, "");
+                            GENERIC.take_snapshot(finalUrl, file, function(snapshot) {
+                                ret = {
+                                    url: finalUrl,
+                                    emails: emails,
+                                    text_matched: text_matched,
+                                    support_help: support_help,
+                                    snapshot: snapshot
+                                }
+                                callback(ret)
+                            })
                         })
                     }
                 })
-            })
+                // })
         }
     })
 }
