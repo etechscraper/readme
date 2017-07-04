@@ -36,6 +36,7 @@ var FN_db_insertDomains = function(domainsList, callback) {
     } else {
         domain = domainsList[0];
         domainsList.splice(0, 1);
+        // console.log(domain.domain_url)
         console.log('Pending to insert --------------------------------------- ' + domainsList.length)
         DB.domains.find({ domain_url: domain.domain_url }).exec(function(err, result) {
             if (result.length) {
@@ -190,7 +191,7 @@ var FN_take_snapshot = function(url, fileName, callback) {
 
         spooky.on('exit', function() {
             console.log('###############EXIT');
-            callback(name);
+            callback(fileName + ".png");
 
         });
         spooky.on('return', function(data) {

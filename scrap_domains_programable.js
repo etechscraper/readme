@@ -87,30 +87,23 @@ function scrapRawDomains(urls, callback) {
                     var website_name = url[0].get("domain_name");
                     var website_url = jQuery('div.section div.field a').attr("href");
                     GENERIC.filterMainDomainName(website_url, function(hostname) {
-                        GENERIC.raw_sub_domains(jQuery, function(raw_sub_domains) {
-                            GENERIC.valid_sub_domains(function(valid_sub_domains) {
-                                valid_subdomain_list = [];
-                                create_valid_subdomains_list(raw_sub_domains, valid_sub_domains, hostname, function(valid_list) {
-                                    if (typeof website_name != 'undefined' && website_name != '' && website_name != null) {
-                                        if (typeof website_url != 'undefined' && website_url.trim() != '') {
-                                            GENERIC.filterMainDomainName(website_url, function(domain_url) {
-                                                allDomains.push({
-                                                    source_website: 'programmableweb',
-                                                    source_website_url: url[0].get("domain_url"),
-                                                    domain_name: website_name,
-                                                    domain_url: domain_url,
-                                                    status: 0
-                                                })
-                                            });
-                                        } else {
-                                            updateTempStatus(url[0]._id, function(res) {
-                                                scrapRawDomains(urls, callback)
-                                            })
-                                        }
-                                    }
+                        if (typeof website_name != 'undefined' && website_name != '' && website_name != null) {
+                            if (typeof website_url != 'undefined' && website_url.trim() != '') {
+                                GENERIC.filterMainDomainName(website_url, function(domain_url) {
+                                    allDomains.push({
+                                        source_website: 'programmableweb',
+                                        source_website_url: url[0].get("domain_url"),
+                                        domain_name: website_name,
+                                        domain_url: domain_url,
+                                        status: 0
+                                    })
+                                });
+                            } else {
+                                updateTempStatus(url[0]._id, function(res) {
+                                    scrapRawDomains(urls, callback)
                                 })
-                            })
-                        })
+                            }
+                        }
                     })
                 })
                 GENERIC.db_insertDomains(allDomains, function(status) {
@@ -134,6 +127,7 @@ function create_valid_subdomains_list(raw_data, valid_data, hostname, callback) 
     if (valid_data.length) {
         create_valid_subdomains_list(raw_data, valid_data, hostname, callback)
     } else {
+        console.log(valid_subdomain_list)
         callback(valid_subdomain_list)
     }
 }
