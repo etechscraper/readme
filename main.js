@@ -2,7 +2,7 @@ var GENERIC = require('./generic.js');
 var DB = require('./db.js');
 var Url = require("url");
 var _ = require("lodash");
-
+var fs = require("fs");
 
 
 function analyseSubdomain(url, callback) {
@@ -103,6 +103,9 @@ function start() {
         })
     })
 }
-
+var path = __dirname + "/snapshots";
+if (!fs.existsSync(path)) {
+    fs.mkdirSync(path);
+}
 
 start();
