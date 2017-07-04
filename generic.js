@@ -191,7 +191,7 @@ var FN_take_snapshot = function(url, fileName, callback) {
 
         spooky.on('exit', function() {
             console.log('###############EXIT');
-            callback(name);
+            callback(fileName + ".png");
 
         });
         spooky.on('return', function(data) {
