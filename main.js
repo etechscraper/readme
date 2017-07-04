@@ -3,7 +3,7 @@ var DB = require('./db.js');
 var Url = require("url");
 var _ = require("lodash");
 var fs = require("fs");
-
+var snapshotFolder = 'snapshots'
 
 function analyseSubdomain(url, callback) {
     GENERIC.is_valid_url(url, function(statusCode, finalUrl) {
@@ -13,7 +13,7 @@ function analyseSubdomain(url, callback) {
             GENERIC.getHtml(finalUrl, function(status, body) {
                     if (status === 'error') {
                         var file = Url.parse(finalUrl).hostname.replace(/\./g, "");
-                        GENERIC.take_snapshot(finalUrl, file, function(snapshot) {
+                        GENERIC.take_snapshot(finalUrl, snapshotFolder, file, function(snapshot) {
                             var ret = {
                                 url: finalUrl,
                                 snapshot: snapshot
@@ -26,7 +26,7 @@ function analyseSubdomain(url, callback) {
                             var text_matched = GENERIC.extract_matched_text(jQuery);
                             var support_help = GENERIC.extract_support_help_links(jQuery);
                             var file = Url.parse(finalUrl).hostname.replace(/\./g, "");
-                            GENERIC.take_snapshot(finalUrl, file, function(snapshot) {
+                            GENERIC.take_snapshot(finalUrl, snapshotFolder, file, function(snapshot) {
                                 ret = {
                                     url: finalUrl,
                                     emails: emails,
@@ -102,7 +102,7 @@ function start() {
         })
     })
 }
-var path = __dirname + "/snapshots";
+var path = __dirname + "/"+snapshotFolder;
 if (!fs.existsSync(path)) {
     fs.mkdirSync(path);
 }

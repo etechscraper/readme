@@ -23,6 +23,7 @@
     "mongoose": "^4.10.8",
     "request": "^2.81.0",
     "spooky": "^0.2.5",
+    "tiny-jsonrpc": "^2.0.1",
     "url-exists": "^1.0.3"
   }
 }

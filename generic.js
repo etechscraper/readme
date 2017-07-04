@@ -13,7 +13,7 @@ try {
 var FN_getHtml = function(url, callback) {
     var options = {
         url: url,
-        timeout: 10000
+        timeout: 5000
     }
     request(options, function(error, response, body) {
         if (!error) {
@@ -92,7 +92,7 @@ var FN_is_valid_url = function(url, callback) {
     request({
         url: domain,
         method: 'HEAD',
-        timeout: 10000
+        timeout: 5000
     }, function(err, res) {
         if (err) {
             callback('', domain);
@@ -161,8 +161,8 @@ var FN_extract_support_help_links = function(jQuery) {
     }
 }
 
-var FN_take_snapshot = function(url, fileName, callback) {
-    var name = __dirname + "/snapshots/" + fileName + ".png";
+var FN_take_snapshot = function(url, foldername, fileName, callback) {
+    var name = __dirname + "/"+ foldername +"/" + fileName + ".png";
     var spooky = new Spooky({
         child: {
             transport: 'http'

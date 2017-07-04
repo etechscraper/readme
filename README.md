@@ -1,5 +1,14 @@
 # Domain Scraping
 
+## Install casperjs
+``` $ sudo npm install -g casperjs ```
+
+## Install phantomjs
+``` $ sudo wget https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-1.9.7-linux-x86_64.tar.bz2 ```
+``` $ sudo tar xjf phantomjs-1.9.7-linux-x86_64.tar.bz2 ```
+``` $ sudo mv phantomjs-1.9.7-linux-x86_64 /usr/local/share ```
+``` $ sudo ln -sf /usr/local/share/phantomjs-1.9.7-linux-x86_64 /usr/local/bin/ ```
+
 ## Install Dependencies
 
 ``` $ npm install ```
@@ -21,3 +30,6 @@
 ### scrap final valid sub-domains list
 
 ``` $ node main.js ```
+
+### Snapshots
+A folder will be created with name ```snapshots``` which will have snapshots of valid domains and name of file is also save in mongoDB with every domain in domains collection.
