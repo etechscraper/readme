@@ -2,7 +2,7 @@ var GENERIC = require('./generic.js');
 
 GENERIC.getHtml('http://yclist.com/', function(status, body) {
     if (status === 'error') {
-
+        // GENERIC.getHtml('http://yclist.com/', callback)
     } else {
         let allDomains = [];
         GENERIC.getDom(body, function(jQuery) {

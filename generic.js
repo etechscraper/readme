@@ -11,7 +11,6 @@ try {
 
 
 var FN_getHtml = function(url, callback) {
-
     var options = {
         url: url,
         timeout: 10000
@@ -21,7 +20,7 @@ var FN_getHtml = function(url, callback) {
             callback('success', body);
         } else {
             console.log(error)
-            callback('error', body);
+            self.getHtml(url, callback)
         }
     })
 }
@@ -164,7 +163,6 @@ var FN_extract_support_help_links = function(jQuery) {
 
 var FN_take_snapshot = function(url, fileName, callback) {
     var name = __dirname + "/snapshots/" + fileName + ".png";
-    console.log(name)
     var spooky = new Spooky({
         child: {
             transport: 'http'
@@ -190,7 +188,6 @@ var FN_take_snapshot = function(url, fileName, callback) {
         spooky.run();
 
         spooky.on('exit', function() {
-            console.log('###############EXIT');
             callback(fileName + ".png");
 
         });
@@ -208,7 +205,7 @@ var FN_take_snapshot = function(url, fileName, callback) {
     });
 }
 
-module.exports = {
+var self = module.exports = {
     getHtml: FN_getHtml,
     getDom: FN_getDOM,
     db_insertDomains: FN_db_insertDomains,
