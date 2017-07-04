@@ -64,7 +64,6 @@ function analyseDomain(sub_domains_to_check, domain, valid_sub_domains_list, cal
                 analyseDomain(sub_domains_to_check, domain, valid_sub_domains_list, callback)
             } else {
                 console.log('--------------------------------------------------Valid Sub Domain')
-                console.log(subdomainRESULT)
                 valid_sub_domains_list.push(subdomainRESULT);
                 analyseDomain(sub_domains_to_check, domain, valid_sub_domains_list, callback)
             }
