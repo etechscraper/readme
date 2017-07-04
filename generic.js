@@ -11,7 +11,6 @@ try {
 
 
 var FN_getHtml = function(url, callback) {
-
     var options = {
         url: url,
         timeout: 10000
@@ -21,7 +20,7 @@ var FN_getHtml = function(url, callback) {
             callback('success', body);
         } else {
             console.log(error)
-            callback('error', body);
+            self.getHtml(url, callback)
         }
     })
 }
@@ -206,7 +205,7 @@ var FN_take_snapshot = function(url, fileName, callback) {
     });
 }
 
-module.exports = {
+var self = module.exports = {
     getHtml: FN_getHtml,
     getDom: FN_getDOM,
     db_insertDomains: FN_db_insertDomains,
