@@ -10,7 +10,9 @@ function scrapRawUrls(urls, callback) {
         console.log('pendgin pages ---------- ' + urls.length)
         allDomains = []
         GENERIC.getHtml(url[0], function(status, body) {
-            if (status === 'error') {} else {
+            if (status === 'error') {
+                scrapRawUrls(urls, callback)
+            } else {
                 GENERIC.getDom(body, function(jQuery) {
                     if (jQuery('table.views-table').length > 0) {
                         jQuery('table.views-table tbody tr').each(function() {
@@ -79,7 +81,7 @@ function scrapRawDomains(urls, callback) {
         allDomains = []
         GENERIC.getHtml(body_url, function(status, body) {
             if (status === 'error') {
-
+                scrapRawDomains(urls, callback)
             } else {
                 GENERIC.getDom(body, function(jQuery) {
                     var website_name = url[0].get("domain_name");
