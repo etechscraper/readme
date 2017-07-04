@@ -3,6 +3,7 @@ var request = require('request');
 var cheerio = require('cheerio');
 var Url = require("url");
 var urlExists = require('url-exists');
+var fs = require("fs");
 try {
     var Spooky = require('spooky');
 } catch (e) {
@@ -36,6 +37,7 @@ var FN_db_insertDomains = function(domainsList, callback) {
     } else {
         domain = domainsList[0];
         domainsList.splice(0, 1);
+        // console.log(domain.domain_url)
         console.log('Pending to insert --------------------------------------- ' + domainsList.length)
         DB.domains.find({ domain_url: domain.domain_url }).exec(function(err, result) {
             if (result.length) {
@@ -164,6 +166,10 @@ var FN_extract_support_help_links = function(jQuery) {
 var FN_take_snapshot = function(url, fileName, callback) {
     var name = __dirname + "/snapshots/" + fileName + ".png";
     console.log(name)
+    var path = __dirname + "/snapshots";
+    if (!fs.existsSync(path)) {
+        fs.mkdirSync(path);
+    }
     var spooky = new Spooky({
         child: {
             transport: 'http'
